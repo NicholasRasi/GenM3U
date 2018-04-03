@@ -1,0 +1,74 @@
+{
+  "_from": "open-iconic",
+  "_id": "open-iconic@1.1.1",
+  "_inBundle": false,
+  "_integrity": "sha1-nc/Ix808Yc20ojaxo0eJTJetwMY=",
+  "_location": "/open-iconic",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "open-iconic",
+    "name": "open-iconic",
+    "escapedName": "open-iconic",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/open-iconic/-/open-iconic-1.1.1.tgz",
+  "_shasum": "9dcfc8c7cd3c61cdb4a236b1a347894c97adc0c6",
+  "_spec": "open-iconic",
+  "_where": "/mnt/Data/Develop/Workspace/Python/GenM3U/GUI",
+  "author": {
+    "name": "Iconic",
+    "email": "yourfriends@useiconic.com",
+    "url": "http://useiconic.com/"
+  },
+  "bugs": {
+    "url": "https://github.com/iconic/open-iconic/issues"
+  },
+  "bundleDependencies": false,
+  "contributors": [
+    {
+      "name": "P.J. Onori",
+      "url": "http://twitter.com/somerandomdude"
+    },
+    {
+      "name": "Dave Johnson",
+      "url": "http://twitter.com/protodave"
+    }
+  ],
+  "deprecated": false,
+  "description": "An open source icon set with marks in SVG, sprite, webfont and raster format",
+  "homepage": "http://useiconic.com/open-iconic/",
+  "keywords": [
+    "icon",
+    "iconic",
+    "open-iconic",
+    "svg",
+    "sprite",
+    "font",
+    "png",
+    "webp"
+  ],
+  "licenses": [
+    {
+      "type": "MIT License",
+      "url": "http://opensource.org/licenses/mit-license.html"
+    },
+    {
+      "type": "SIL OFL 1.1",
+      "url": "http://scripts.sil.org/OFL"
+    }
+  ],
+  "name": "open-iconic",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iconic/open-iconic.git"
+  },
+  "version": "1.1.1"
+}

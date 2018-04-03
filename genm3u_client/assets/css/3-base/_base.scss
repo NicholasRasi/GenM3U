@@ -1,0 +1,31 @@
+/* Base Styles -------------------- */
+.checkedOk{
+  background-color: lightgreen;
+}
+
+.checkedKo{
+  background-color: lightcoral;
+}
+
+.notChecked{
+  background-color: lightsalmon;
+}
+
+.table th, .table td {
+  padding: 0.25rem;
+}
+
+.inputData {
+  background-color: inherit;
+  border: 0;
+}
+
+.channel-id{
+ width: 50px;
+}
+
+.channel-meta{
+  resize: none;
+  overflow: auto;
+  height:auto;
+}

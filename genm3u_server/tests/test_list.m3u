@@ -1,0 +1,8 @@
+#EXTM3U
+#EXTINF:-1, Test1
+"http://github.com/"
+
+#EXTINF:-1, Test2
+"http://errorlink123"
+
+#EXT-X-ENDLIST

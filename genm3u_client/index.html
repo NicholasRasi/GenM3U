@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content="Manage and generate M3U channels lists">
+    <title>GenM3U</title>
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <!-- build:css -->
+    <link rel="stylesheet" href="assets/css/main.css">
+    <!-- endbuild -->
+    <link rel="stylesheet" href="assets/open-iconic/font/css/open-iconic-bootstrap.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-animate.js"></script>
+</head>
+
+<body ng-app="myApp" ng-controller="myCtrl">
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href=".">GenM3U</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown-file" data-toggle="dropdown"
+                   aria-haspopup="true" aria-expanded="false">File</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown01">
+                    <a class="dropdown-item" data-toggle="modal" data-target="#file-import">Import</a>
+                    <a class="dropdown-item" data-toggle="modal" data-target="#file-export">Export</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" data-toggle="modal" data-target="#file-settings">Settings</a>
+                </div>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown-edit" data-toggle="dropdown"
+                   aria-haspopup="true" aria-expanded="false">Edit</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown01">
+                    <a class="dropdown-item" data-toggle="modal" data-target="#edit-add">Add</a>
+                    <a class="dropdown-item" data-toggle="modal" data-target="#edit-clear">Clear the list</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" ng-click="checkAll()">Check All</a>
+                </div>
+            </li>
+        </ul>
+        <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" ng-model="searchText">
+        </form>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div style="padding-top:120px; text-align:center;">
+        <table class="table table-hover">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Actions</th>
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Metadata</th>
+                <th scope="col">Url</th>
+                <!--<th scope="col">Checked</th>-->
+                <th scope="col">Last Check</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="channel in channels | filter:searchText"
+                ng-class="{'checkedOk': channel.checked && channel.last_check,
+                           'checkedKo': !channel.checked && channel.last_check,
+                           'notChecked': !channel.checked && !channel.last_check}">
+                <th scope="row">
+                    <input type="number" class="inputData channel-id" min="1" ng-model="channel.position"
+                           ng-change="updateChannel(channel)"
+                           ng-model-options="{updateOn: 'blur mouseout'}">
+                </th>
+                <td>
+                    <span class="oi oi-check" ng-click="checkChannel(channel, $index)"></span>
+                    <span class="oi oi-ban" ng-click="removeChannel(channel, $index)"></span>
+                </td>
+                <td>{{channel.ID}}</td>
+                <td>
+                    <input type="text" class="inputData" ng-model="channel.name" ng-change="updateChannel(channel)"
+                           ng-model-options="{updateOn: 'blur mouseout'}">
+                </td>
+                <td>
+                    <textarea contenteditable="true" class="inputData channel-meta" ng-model="channel.metadata" ng-change="updateChannel(channel)"
+                              ng-model-options="{updateOn: 'blur mouseout'}"></textarea>
+                </td>
+                <td><input type="text" class="inputData" ng-model="channel.url"
+                           ng-change="updateAndCheckChannel(channel)" ng-model-options="{updateOn: 'blur mouseout'}">
+                </td>
+                <!--td>{{channel.checked}}</td>-->
+                <td>{{channel.last_check | date:"medium"}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+
+<!-- Add Modal -->
+<div class="modal fade" id="edit-add" tabindex="-1" role="dialog" aria-labelledby="edit-add" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add channel</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Add a new channel to the list
+
+                <form name="editAddForm" class="pt-2">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="edit-add-name">Name</span>
+                        </div>
+                        <input name="editAddName" ng-model="editAddName" required type="text" class="form-control"
+                               ng-class="{'is-invalid': editAddForm.editAddName.$invalid}" aria-label="Name"
+                               aria-describedby="edit-add-name">
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="edit-add-meta">Meta</span>
+                        </div>
+                        <input name="editAddMeta" ng-model="editAddMeta" type="text" class="form-control"
+                               aria-label="Meta"
+                               aria-describedby="edit-add-meta">
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="edit-add-url">Url</span>
+                        </div>
+                        <input name="editAddUrl" ng-model="editAddUrl" required type="text" class="form-control"
+                               ng-class="{'is-invalid': editAddForm.editAddUrl.$invalid}" aria-label="Url"
+                               aria-describedby="edit-add-url">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" ng-click="addChannel()"
+                        ng-disabled="editAddForm.editAddName.$invalid || editAddForm.editAddUrl.$invalid">Save changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Clear Modal -->
+<div class="modal fade" id="edit-clear" tabindex="-1" role="dialog" aria-labelledby="edit-clear" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Clear list</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Do you want to clear the list?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" ng-click="clearList()">Clear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal fade" id="file-import" tabindex="-1" role="dialog" aria-labelledby="file-input" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Import list</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Import a new list
+
+                <form name="fileImportForm" class="pt-2">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="file-import-file">File</span>
+                        </div>
+                        <input id="fileImport" name="fileImport" type="file" class="form-control"
+                               ng-class="{'is-invalid': fileImportForm.fileImportFilename.$invalid}"
+                               aria-label="File name"
+                               aria-describedby="file-import-file">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" ng-click="importFile()">Import file</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="file-export" tabindex="-1" role="dialog" aria-labelledby="file-input" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Export list</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Export the channel list
+
+                <form name="fileImportForm" class="pt-2">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="file-export-options">Options</span>
+                        </div>
+                        <select id="fileExportOption" name="fileExportOption" class="form-control"
+                                aria-label="File option"
+                                aria-describedby="file-export-option"
+                                ng-model="fileExportOption">
+                            <option value="all">All</option>
+                            <option value="online">Online Only</option>
+                            <option value="offline">Offline Only</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" ng-click="exportFile()">Export file</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal fade" id="file-settings" tabindex="-1" role="dialog" aria-labelledby="file-input" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Settings</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form name="fileSettings" class="pt-2">
+                    <div class="input-group mb-3">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="file-settings-publiclink">Public Link</span>
+                            </div>
+                            <input name="fileSettingsPublicLink" ng-model="fileSettingsPublicLink" required type="text" class="form-control"
+                                   aria-label="Public Link" contenteditable="false"
+                                   aria-describedby="file-settings-publiclink" alt="The public link where the playlist is available">
+                        </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="file-settings-server">Server</span>
+                            </div>
+                            <input name="fileSettingsServer" ng-model="fileSettingsServer" required type="text" class="form-control"
+                                   ng-class="{'is-invalid': fileSettings.fileSettingsServer.$invalid}" aria-label="Server"
+                                   aria-describedby="file-settings-server">
+                        </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="file-settings-attempts">Attempts</span>
+                            </div>
+                            <input name="fileSettingsAttempts" ng-model="fileSettingsAttempts" required type="number" class="form-control"
+                                   ng-class="{'is-invalid': fileSettings.fileSettingsAttempts.$invalid}" aria-label="Attempts"
+                                   aria-describedby="file-settings-attempts" alt="Max number of attempts when the channel is checked">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- build:js -->
+<script src="assets/js/main.js"></script>
+<!-- endbuild -->
+</body>
+
+</html>
