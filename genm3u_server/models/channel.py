@@ -16,7 +16,7 @@ class Channel():
         self.checked = checked
         self.last_check = last_check
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.name
 
     def getUrl(self):

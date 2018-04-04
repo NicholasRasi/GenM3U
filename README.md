@@ -24,11 +24,30 @@ It can check if a channel is online and allows you to export playlist that you b
 - AngularJS (JS) frontend to consume APIs, built with the [Bootstrap 4 boilerplate](https://github.com/wapbamboogie/bootstrap-4-boilerplate)
 
 ## How to run it
+Install these packages if you don't already have them
+```
+sudo apt-get install python3-pip
+pip3 install --upgrade pip setuptools
+```
 
+Let's create a virtual environment
+```
+mkdir venvs
+python3 -m venv venvs/
+source ~/venvs/bin/activate
+```
+
+
+Then you need to install the requirements
+```
+pip install -r requirements.txt
+```
+
+The run the server with
 ```
 export FLASK_APP=api.py
 export FLASK_DEBUG=1
 flask run
 ```
 
-Then open /genm3u_client/dist/index.html
+Now you are ready to open /genm3u_client/dist/index.html and connect to the server.
