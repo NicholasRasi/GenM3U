@@ -3,7 +3,7 @@ GenM3U is a M3U playlist builder. It can be used to manage IPTV channels lists a
 import, export and share M3U playlist.
 It can check if a channel is online and allows you to export playlist that you build.
 
-See how it looks like [here](https://makebit.github.io/GenM3U/genm3u_client/dist/index.html)!
+#### You can use the client [here](https://makebit.github.io/GenM3U/genm3u_client/dist/index.html)!
 
 ## List of features
 - Add/Remove/Update single channel
