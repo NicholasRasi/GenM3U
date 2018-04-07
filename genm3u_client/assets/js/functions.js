@@ -35,6 +35,8 @@ app.controller('myCtrl', function ($scope, $timeout, $http, $window) {
             }
         }).then(function (response) {
             $scope.channels = response.data;
+        }, function error(response) {
+            $scope.showErrorResponse('Error with the server');
         });
     };
     $scope.refreshView();
