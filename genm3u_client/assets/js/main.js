@@ -655,57 +655,52 @@ app.controller('myCtrl', function ($scope, $timeout, $http, $window) {
      * Default values
      */
     if (typeof(Storage) !== "undefined") {
-        $scope.fileSettingsServer = localStorage.getItem("fileSettingsServer") || "http://127.0.0.1:5000/channels/";
-        $scope.fileSettingsAttempts = parseInt(localStorage.getItem("fileSettingsAttempts")) || 5
+        $scope.key = localStorage.getItem("key");
+        $scope.server = localStorage.getItem("server") || "http://127.0.0.1:5000/channels/";
+        $scope.attempts = parseInt(localStorage.getItem("attempts")) || 5
     } else {
         // No Web Storage support
-        $scope.fileSettingsServer = "http://127.0.0.1:5000/channels/";
-        $scope.fileSettingsAttempts = 5;
+        $scope.server = "http://127.0.0.1:5000/channels/";
+        $scope.attempts = 5;
     }
     $scope.fileExportOption = "all";
-    $scope.actionResult = "None";
-    $scope.downloadApi = $scope.fileSettingsServer + 'download/';
-
-
-    $http({
-        method: "GET",
-        url: $scope.fileSettingsServer + 'getkey/'
-    }).then(function (response) {
-        if (response.data.key !== null && response.status === 200) {
-            $scope.fileSettingsPublicLink = $scope.fileSettingsServer + 'link/' + response.data.key
-        }
-    });
-
-
-
 
     /**
      * Functions declaration
      */
-    $scope.saveSettings = function () {
-        if (typeof(Storage) !== "undefined") {
-            localStorage.setItem("fileSettingsServer", $scope.fileSettingsServer);
-            localStorage.setItem("fileSettingsAttempts", $scope.fileSettingsAttempts);
-            $('#file-settings').modal('hide');
-        } else {
-            alert("Your browser does not support Web Storage");
-        }
-    };
-
     $scope.refreshView = function () {
         $http({
             method: "GET",
-            url: $scope.fileSettingsServer
+            url: $scope.server,
+            headers: {
+                "key": $scope.key
+            }
         }).then(function (response) {
             $scope.channels = response.data;
         });
     };
     $scope.refreshView();
 
+    $scope.saveSettings = function () {
+        if (typeof(Storage) !== "undefined") {
+            localStorage.setItem("key", $scope.key);
+            localStorage.setItem("server", $scope.server);
+            localStorage.setItem("attempts", $scope.attempts);
+            $('#file-settings').modal('hide');
+            $scope.refreshView();
+        } else {
+            alert("Your browser does not support Web Storage");
+        }
+    };
+
+
     $scope.removeChannel = function (channel, $index) {
         $http({
             method: "DELETE",
-            url: $scope.fileSettingsServer + channel.ID + '/'
+            url: $scope.server + channel.ID + '/',
+            headers: {
+                "key": $scope.key
+            }
         }).then(function (response) {
             if (response.data.length > 0 && response.status === 200) {
                 $scope.showSuccessResponse('Channel removed successfully');
@@ -724,7 +719,10 @@ app.controller('myCtrl', function ($scope, $timeout, $http, $window) {
 
         $http({
             method: "PUT",
-            url: $scope.fileSettingsServer + channel.ID + '/',
+            url: $scope.server + channel.ID + '/',
+            headers: {
+                "key": $scope.key
+            },
             data: {
                 position: channel.position,
                 name: channel.name,
@@ -762,7 +760,10 @@ app.controller('myCtrl', function ($scope, $timeout, $http, $window) {
             // start the http request
             $http({
                 method: "POST",
-                url: $scope.fileSettingsServer,
+                url: $scope.server,
+                headers: {
+                    "key": $scope.key
+                },
                 data: {
                     position: $scope.channels.length + 1,
                     name: $scope.editAddName,
@@ -789,9 +790,12 @@ app.controller('myCtrl', function ($scope, $timeout, $http, $window) {
         $scope.showInfoResponse('Channel ' + channel.ID + ' checking is started');
         $http({
             method: "POST",
-            url: $scope.fileSettingsServer + channel.ID + '/check/',
+            url: $scope.server + channel.ID + '/check/',
+            headers: {
+                "key": $scope.key
+            },
             data: {
-                attempts: $scope.fileSettingsAttempts
+                attempts: $scope.attempts
             }
         }).then(function (response) {
             console.log(response);
@@ -814,13 +818,16 @@ app.controller('myCtrl', function ($scope, $timeout, $http, $window) {
     };
 
     $scope.checkAll = function () {
-        $scope.showInfoResponse('Checking started with ' + $scope.fileSettingsAttempts + ' attempts. Please wait...');
+        $scope.showInfoResponse('Checking started with ' + $scope.attempts + ' attempts. Please wait...');
 
         $http({
             method: "POST",
-            url: $scope.fileSettingsServer + 'checkAll/',
+            url: $scope.server + 'checkAll/',
+            headers: {
+                "key": $scope.key
+            },
             data: {
-                attempts: $scope.fileSettingsAttempts
+                attempts: $scope.attempts
             }
         }).then(function (response) {
             console.log(response);
@@ -840,7 +847,10 @@ app.controller('myCtrl', function ($scope, $timeout, $http, $window) {
         // start the http request
         $http({
             method: "DELETE",
-            url: $scope.fileSettingsServer,
+            url: $scope.server,
+            headers: {
+                "key": $scope.key
+            },
             data: {
                 position: $scope.channels.length + 1,
                 name: $scope.editAddName,
@@ -874,10 +884,13 @@ app.controller('myCtrl', function ($scope, $timeout, $http, $window) {
 
         // start the http request
         $http({
-            url: $scope.fileSettingsServer + 'upload/',
+            url: $scope.server + 'upload/',
             data: formData,
             method: "POST",
-            headers: {'Content-Type': undefined},
+            headers: {
+                'Content-Type': undefined,
+                'key': $scope.key
+            },
             transformRequest: angular.identity
         }).then(function (response) {
             $('#file-import').modal('hide');
@@ -900,18 +913,20 @@ app.controller('myCtrl', function ($scope, $timeout, $http, $window) {
         // start the http request
         $http({
             method: "GET",
-            url: $scope.fileSettingsServer + 'export/' + $scope.fileExportOption
+            url: $scope.server + 'export/' + $scope.fileExportOption,
+            headers: {
+                "key": $scope.key
+            }
         }).then(function (response) {
             // hide the modal
-            $('#file-export').modal('hide');
+            //$('#file-export').modal('hide');
 
             // if response is 200
             if (response.status === 200 && response.data.result) {
                 $scope.showSuccessResponse('List exported');
-                $window.open($scope.downloadApi + response.data.filename, '_blank');
+                $window.open($scope.server + 'download/' + $scope.key + '/' + response.data.filename, '_blank');
+                $scope.servingUrl = $scope.server + 'download/' + $scope.key + '/' + response.data.filename
 
-                $scope.fileExportName = response.data.filename;
-                $scope.fileExportReady = true;
             } else {
                 $scope.showErrorResponse('List not exported');
             }

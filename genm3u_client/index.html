@@ -236,6 +236,10 @@
                             <option value="offline">Offline Only</option>
                         </select>
                     </div>
+                    <div class="form-group" ng-show ="servingUrl">
+                        <label for="servingUrl">Playlist served at:</label>
+                        <textarea class="form-control" name="servingUrl" id="servingUrl" rows="3">{{servingUrl}}</textarea>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -259,29 +263,37 @@
             <div class="modal-body">
                 <form name="fileSettings" class="pt-2">
                     <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="file-settings-servingUrl">Playlist served at</span>
+                        </div>
+                        <input name="fileSettingsServingUrl" ng-model="servingUrl" required type="text" class="form-control"
+                               aria-label="Serving Url" aria-describedby="file-settings-servingUrl" placeholder="Export the playlist to get the serving url">
+                    </div>
+
+                    <div class="input-group mb-3">
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
-                                <span class="input-group-text" id="file-settings-publiclink">Public Link</span>
+                                <span class="input-group-text" id="file-settings-privatekey">Private Key</span>
                             </div>
-                            <input name="fileSettingsPublicLink" ng-model="fileSettingsPublicLink" required type="text" class="form-control"
-                                   aria-label="Public Link" contenteditable="false"
-                                   aria-describedby="file-settings-publiclink" alt="The public link where the playlist is available">
+                            <input name="fileSettingsPrivatekey" ng-model="key" required type="text" class="form-control"
+                                   aria-label="Private Key" contenteditable="false"
+                                   aria-describedby="file-settings-privatekey" placeholder="Paste here your private key">
                         </div>
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="file-settings-server">Server</span>
                             </div>
-                            <input name="fileSettingsServer" ng-model="fileSettingsServer" required type="text" class="form-control"
+                            <input name="fileSettingsServer" ng-model="server" required type="text" class="form-control"
                                    ng-class="{'is-invalid': fileSettings.fileSettingsServer.$invalid}" aria-label="Server"
-                                   aria-describedby="file-settings-server">
+                                   aria-describedby="file-settings-server" placeholder="Paste here your server URL">
                         </div>
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="file-settings-attempts">Attempts</span>
                             </div>
-                            <input name="fileSettingsAttempts" ng-model="fileSettingsAttempts" required type="number" class="form-control"
+                            <input name="fileSettingsAttempts" ng-model="attempts" required type="number" class="form-control"
                                    ng-class="{'is-invalid': fileSettings.fileSettingsAttempts.$invalid}" aria-label="Attempts"
-                                   aria-describedby="file-settings-attempts" alt="Max number of attempts when the channel is checked">
+                                   aria-describedby="file-settings-attempts" placeholder="Max number of attempts when the channel is checked">
                         </div>
                     </div>
                 </form>

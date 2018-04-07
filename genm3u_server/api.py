@@ -11,16 +11,17 @@ from modules import m3uio
 from modules import m3uchecker
 from modules.database import Database
 
-MAX_ATTEMPTS = 5
+### Initial configuration
+MAX_DEFAULT_ATTEMPTS = 5
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-
 cors = CORS(app, resources={r"*": {"origins": "*"}})
 
+# Paths configuration
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 app.config['UPLOAD_FOLDER'] = dir_path + '/uploads'
@@ -37,10 +38,28 @@ if not os.path.exists(app.config['DB_FOLDER']):
     os.makedirs(app.config['DB_FOLDER'])
 db = Database(app.config['DB_FOLDER'] + "/db.json")
 
+# Private key
+# generated one-time with the database
+pkey = db.get_playlist_key()['key']
+print("Your private key is", pkey)
 
+
+def check_request_key(request):
+    if 'key' in request.headers:
+        logger.debug("Checking key: %s", request.headers['key'])
+        if request.headers['key'] == pkey:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
+### API Definition
 # get all the channels
 @app.route("/channels/", methods=['GET'])
 def all_channels():
+    if not check_request_key(request): return 'Unauthorized', 401
     logger.debug("Channels: %s", db.all_channels_sorted())
     logger.debug("Get all the channels")
     return jsonify(db.all_channels_sorted())
@@ -49,6 +68,7 @@ def all_channels():
 # get a channel
 @app.route("/channels/<id>/", methods=['GET'])
 def get_channel(id):
+    if not check_request_key(request): return 'Unauthorized', 401
     logger.debug("Get channel: %s", id)
     return jsonify(db.get_channel(int(id)))
 
@@ -56,6 +76,7 @@ def get_channel(id):
 # add a channel
 @app.route("/channels/", methods=['POST'])
 def add_channel():
+    if not check_request_key(request): return 'Unauthorized', 401
     logger.debug("Adding a channel: %s %s %s %s", request.json['position'], request.json['name'],
                  request.json.get('metadata', ''), request.json['url'])
     newChannel = Channel(position=request.json['position'],
@@ -69,6 +90,7 @@ def add_channel():
 # update channel
 @app.route("/channels/<id>/", methods=['PUT'])
 def update_channel(id):
+    if not check_request_key(request): return 'Unauthorized', 401
     logger.debug("Updating channel: %s", id)
     channel = Channel(position=request.json['position'],
                       name=request.json['name'],
@@ -83,6 +105,7 @@ def update_channel(id):
 # delete channel
 @app.route("/channels/<id>/", methods=['DELETE'])
 def delete_channel(id):
+    if not check_request_key(request): return 'Unauthorized', 401
     logger.debug("Deleting channel: %s", id)
     return jsonify(db.remove_channel(int(id)))
 
@@ -90,13 +113,15 @@ def delete_channel(id):
 # delete all the list
 @app.route("/channels/", methods=['DELETE'])
 def delete_all_channels():
+    if not check_request_key(request): return 'Unauthorized', 401
     logger.debug("Deleting all the list")
     return jsonify(db.purge_channel_table())
 
 
 # check channel
 @app.route("/channels/<id>/check/", methods=['POST'])
-def check_channel(id, json=True, attempts=MAX_ATTEMPTS):
+def check_channel(id, json=True, attempts=MAX_DEFAULT_ATTEMPTS):
+    if not check_request_key(request): return 'Unauthorized', 401
     logger.debug("Checking channel: %s", id)
     # get the channel info
     channel = db.get_channel(int(id))
@@ -130,6 +155,7 @@ def check_channel(id, json=True, attempts=MAX_ATTEMPTS):
 # check all the channels
 @app.route("/channels/checkAll/", methods=['POST'])
 def check_all_channels():
+    if not check_request_key(request): return 'Unauthorized', 401
     logger.debug("Checking all the channels")
     online = offline = 0
     for channel in db.all_channels():
@@ -145,6 +171,7 @@ def check_all_channels():
 # html should be: enctype="multipart/form-data"
 @app.route('/channels/upload/', methods=['GET', 'POST'])
 def upload_file():
+    if not check_request_key(request): return 'Unauthorized', 401
     logger.debug("Uploading a file")
     if request.method == 'POST':
         # check if the post request has the file part
@@ -181,6 +208,7 @@ def upload_file():
 # check all the channels
 @app.route("/channels/export/<option>", methods=['GET'])
 def export_file(option, json=True):
+    if not check_request_key(request): return 'Unauthorized', 401
     logger.debug("Exporting " + option)
 
     if not option:
@@ -203,13 +231,10 @@ def export_file(option, json=True):
     else:
         return {'result': result, 'filename': app.config['EXPORT_FILENAME']}
 
-@app.route("/channels/download/<filename>", methods=['GET'])
-def download_file(filename):
-    return send_from_directory(app.config['EXPORT_FOLDER'], filename)
-
 
 @app.route("/channels/checkandexport/<option>", methods=['GET'])
 def check_and_export(option):
+    if not check_request_key(request): return 'Unauthorized', 401
     logger.debug("Checking and exporting: " + option)
     check_all_channels()
     result = export_file(option, False)
@@ -220,15 +245,11 @@ def check_and_export(option):
         return jsonify({'result': 0})
 
 
-@app.route("/channels/getkey/", methods=['GET'])
-def get_playlist_key():
-    logger.debug("Getting playlist public key")
-    return jsonify(db.get_playlist_key())
-
-@app.route("/channels/link/<key>", methods=['GET'])
-def get_playlist_download(key):
-    logger.debug("Getting public playlist with key: " + key)
-    if key == db.get_playlist_key()['key']:
-        return send_from_directory(app.config['EXPORT_FOLDER'], app.config['EXPORT_FILENAME'], as_attachment=True)
-    else:
-        return 'Unauthorized', 401
+@app.route("/channels/download/<key>/<filename>/", methods=['GET'])
+def download_file(key, filename):
+    # key can be passed as header parameter or directly in the url
+    if not check_request_key(request):
+        if not key == pkey:
+            return 'Unauthorized', 401
+    logger.debug("Downloading the playlist")
+    return send_from_directory(app.config['EXPORT_FOLDER'], filename, as_attachment=True)
