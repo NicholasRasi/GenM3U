@@ -19,7 +19,7 @@ See how it looks like [here](https://makebit.github.io/GenM3U/genm3u_client/dist
 ## Future Improvements
 - Mail notification of current playlist status
 - Import from URL
-- Managing of multiple playlists
+- Manage multiple playlists
 
 
 ## How it is build
